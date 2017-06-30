@@ -160,7 +160,18 @@ module MiniMagick
             convert << "json:"
           end
 
-          data = JSON.parse(json)
+          data = begin
+            JSON.parse(json)
+          rescue Exception => e
+            json = begin
+              j = json.split("\n").map do |l|
+                l.include?('delay') ? "#{l}," : l
+              end.join("")
+              JSON.parse(j)
+            rescue Exception => e
+              {:image => {}}.as_json
+            end
+          end
           data = data.fetch(0) if data.is_a?(Array)
           data.fetch("image")
         )
